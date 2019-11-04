@@ -7,16 +7,13 @@ import com.bootdo.clouddoadmin.service.UserService;
 import com.bootdo.clouddoadmin.utils.MD5Utils;
 import com.bootdo.clouddocommon.annotation.Log;
 import com.bootdo.clouddocommon.context.FilterContextHandler;
-import com.bootdo.clouddocommon.dto.LoginDTO;
 import com.bootdo.clouddocommon.dto.UserToken;
+import com.bootdo.clouddocommon.request.LoginRequest;
 import com.bootdo.clouddocommon.utils.JwtUtils;
 import com.bootdo.clouddocommon.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -38,19 +35,19 @@ public class LoginController {
 
     @Log("登录")
     @PostMapping("/login")
-    R login(@Valid @RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) {
-        String username = loginDTO.getUsername().trim();
-        String password = loginDTO.getPwd().trim();
+    R login(@Valid @RequestBody LoginRequest request) {
+        String username = request.getUsername().trim();
+        String password = request.getPwd().trim();
         password = MD5Utils.encrypt(username, password);
         Map<String, Object> param = new HashMap<>();
         param.put("username", username);
         List<UserDO> userDOs = userService.list(param);
-        if(userDOs.size()<1){
-            return R.error("用户或密码错误");
+        if(userDOs.size()<1 || null == userDOs.get(0)){
+            return R.error("用户不存在");
         }
         UserDO userDO = userDOs.get(0);
-        if (null == userDO || !userDO.getPassword().equals(password)) {
-            return R.error("用户或密码错误");
+        if (!userDO.getPassword().equals(password)) {
+            return R.error("密码错误");
         }
         UserToken userToken = new UserToken(userDO.getUsername(), userDO.getUserId().toString(), userDO.getName());
         String token="";
@@ -70,7 +67,7 @@ public class LoginController {
 
 
     @RequestMapping("/logout")
-    R logout(HttpServletRequest request, HttpServletResponse response) {
+    R logout() {
         menuService.clearCache(Long.parseLong(FilterContextHandler.getUserID()));
         return R.ok();
     }

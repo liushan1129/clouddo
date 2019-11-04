@@ -2,27 +2,25 @@ package com.bootdo.clouddoadmin.controller;
 
 import com.bootdo.clouddoadmin.domain.UserDO;
 import com.bootdo.clouddoadmin.dto.UserDTO;
-import com.bootdo.clouddoadmin.dto.UserRoleDTO;
 import com.bootdo.clouddoadmin.dto.do2dto.UserConvert;
+import com.bootdo.clouddoadmin.enums.ErrorCode;
 import com.bootdo.clouddoadmin.service.RoleService;
 import com.bootdo.clouddoadmin.service.UserService;
+import com.bootdo.clouddoadmin.utils.BeanUtils;
 import com.bootdo.clouddoadmin.utils.MD5Utils;
 import com.bootdo.clouddocommon.annotation.Log;
 import com.bootdo.clouddocommon.context.FilterContextHandler;
 import com.bootdo.clouddocommon.dto.LoginUserDTO;
+import com.bootdo.clouddocommon.request.UserRequest;
 import com.bootdo.clouddocommon.utils.PageUtils;
 import com.bootdo.clouddocommon.utils.Query;
 import com.bootdo.clouddocommon.utils.R;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.BeanUtils;
+import com.bootdo.clouddocommon.utils.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +35,9 @@ public class UserController extends BaseController {
     UserService userService;
     @Autowired
     RoleService roleService;
+
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 
 	/**
 	 * 登录的当前用户，前台需要验证用户登录的页面可以调用此方法
@@ -79,23 +80,37 @@ public class UserController extends BaseController {
 
 	/**
 	 * 增加用户
-	 * @param user
+	 * @param request
 	 * @return
 	 */
-	@PostMapping()
-    R save(@RequestBody UserDO user) {
-		user.setPassword(MD5Utils.encrypt(user.getUsername(), user.getPassword()));
-		return R.operate(userService.save(user) > 0);
+	@PostMapping("save")
+    R save(@RequestBody UserRequest request) {
+		UserDO user = BeanUtils.copyProperties(request, UserDO.class);
+		user.setPassword(MD5Utils.encrypt(request.getUserName(), request.getPassword()));
+		Response<Integer> saveResponse = userService.save(user);
+		if(!saveResponse.isSuccess()) {
+			return R.error(saveResponse.getCode(), saveResponse.getMsg());
+		}
+		return R.data(saveResponse.getData());
 	}
 
 	/**
 	 * 修改用户
-	 * @param user
+	 * @param request
 	 * @return
 	 */
-	@PutMapping()
-	R update(@RequestBody UserDO user) {
-		return R.operate(userService.update(user) > 0);
+	@PostMapping("update")
+	R update(@RequestBody UserRequest request) {
+		if(request.getUserId() == null || request.getUserId() <= 0) {
+			logger.error("userId is null");
+			return R.error(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
+		}
+		UserDO user = BeanUtils.copyProperties(request, UserDO.class);
+		Response<Integer> updateResponse = userService.update(user);
+		if(!updateResponse.isSuccess() || updateResponse.getData() < 0) {
+			return R.error(updateResponse.getCode(), updateResponse.getMsg());
+		}
+		return R.operate(Boolean.TRUE);
 	}
 
 
@@ -104,9 +119,16 @@ public class UserController extends BaseController {
 	 * @param id
 	 * @return
 	 */
-	@DeleteMapping()
+	@PostMapping("delete")
 	R remove( Long id) {
-		return R.operate (userService.remove(id) > 0);
+		if(id == null || id < 0) {
+			return R.error(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
+		}
+		Response<Integer> delResponse = userService.remove(id);
+		if(!delResponse.isSuccess()) {
+			return R.error(delResponse.getCode(), delResponse.getMsg());
+		}
+		return R.operate (Boolean.TRUE);
 	}
 
 	@PostMapping("/batchRemove")

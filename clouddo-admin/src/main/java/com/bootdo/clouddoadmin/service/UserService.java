@@ -4,6 +4,7 @@ import com.bootdo.clouddoadmin.domain.Tree;
 import com.bootdo.clouddoadmin.domain.DeptDO;
 import com.bootdo.clouddoadmin.domain.UserDO;
 import com.bootdo.clouddoadmin.vo.UserVO;
+import com.bootdo.clouddocommon.utils.Response;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,11 +20,11 @@ public interface UserService {
 
 	int count(Map<String, Object> map);
 
-	int save(UserDO user);
+	Response<Integer> save(UserDO user);
 
-	int update(UserDO user);
+	Response<Integer> update(UserDO user);
 
-	int remove(Long userId);
+	Response<Integer> remove(Long userId);
 
 	int batchremove(Long[] userIds);
 
@@ -50,4 +51,6 @@ public interface UserService {
 	 * @throws Exception
 	 */
     Map<String, Object> updatePersonalImg(MultipartFile file, String avatar_data, Long userId) throws Exception;
+
+    Response<UserDO> queryUserByMobile(String mobile);
 }

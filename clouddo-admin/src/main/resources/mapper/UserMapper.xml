@@ -2,14 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.bootdo.clouddoadmin.dao.UserDao">
-
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+        user_id,username,name,password,dept_id,email,mobile,status,user_id_create,gmt_create,gmt_modified,sex,birth,
+        pic_id,live_address,hobby,province,city,district
+    </sql>
 	<select id="get" resultType="com.bootdo.clouddoadmin.domain.UserDO">
-		select `user_id`,`username`,`name`,`password`,`dept_id`,`email`,`mobile`,`status`,`user_id_create`,`gmt_create`,`gmt_modified`,`sex`,`birth`,`pic_id`,`live_address`,`hobby`,`province`,`city`,`district` from sys_user where user_id = #{value}
+		select <include refid="Base_Column_List" />
+		from sys_user where user_id = #{value}
 	</select>
 
 	<select id="list" resultType="com.bootdo.clouddoadmin.domain.UserDO">
-		select `user_id`,`username`,`name`,`password`,`dept_id`,`email`,`mobile`,`status`,`user_id_create`,`gmt_create`,`gmt_modified`,`sex`,`birth`,`pic_id`,`live_address`,`hobby`,`province`,`city`,`district` from sys_user
-        <where>  
+		select <include refid="Base_Column_List" />
+		from sys_user
+        <where>
 		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
 		  		  <if test="username != null and username != ''"> and username = #{username} </if>
 		  		  <if test="name != null and name != ''"> and name = #{name} </if>
@@ -42,10 +48,10 @@
 			limit #{offset}, #{limit}
 		</if>
 	</select>
-	
+
  	<select id="count" resultType="int">
 		select count(*) from sys_user
-		 <where>  
+		 <where>
 		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
 		  		  <if test="username != null and username != ''"> and username = #{username} </if>
 		  		  <if test="name != null and name != ''"> and name = #{name} </if>
@@ -67,54 +73,54 @@
 		  		  <if test="district != null and district != ''"> and district = #{district} </if>
 		  		</where>
 	</select>
-	 
+
 	<insert id="save" parameterType="com.bootdo.clouddoadmin.domain.UserDO" useGeneratedKeys="true" keyProperty="userId">
 		insert into sys_user
 		(
-			`username`, 
-			`name`, 
-			`password`, 
-			`dept_id`, 
-			`email`, 
-			`mobile`, 
-			`status`, 
-			`user_id_create`, 
-			`gmt_create`, 
-			`gmt_modified`, 
-			`sex`, 
-			`birth`, 
-			`pic_id`, 
-			`live_address`, 
-			`hobby`, 
-			`province`, 
-			`city`, 
+			`username`,
+			`name`,
+			`password`,
+			`dept_id`,
+			`email`,
+			`mobile`,
+			`status`,
+			`user_id_create`,
+			`gmt_create`,
+			`gmt_modified`,
+			`sex`,
+			`birth`,
+			`pic_id`,
+			`live_address`,
+			`hobby`,
+			`province`,
+			`city`,
 			`district`
 		)
 		values
 		(
-			#{username}, 
-			#{name}, 
-			#{password}, 
-			#{deptId}, 
-			#{email}, 
-			#{mobile}, 
-			#{status}, 
-			#{userIdCreate}, 
-			#{gmtCreate}, 
-			#{gmtModified}, 
-			#{sex}, 
-			#{birth}, 
-			#{picId}, 
-			#{liveAddress}, 
-			#{hobby}, 
-			#{province}, 
-			#{city}, 
+			#{username},
+			#{name},
+			#{password},
+			#{deptId},
+			#{email},
+			#{mobile},
+			#{status},
+			#{userIdCreate},
+			#{gmtCreate},
+			#{gmtModified},
+			#{sex},
+			#{birth},
+			#{picId},
+			#{liveAddress},
+			#{hobby},
+			#{province},
+			#{city},
 			#{district}
 		)
 	</insert>
-	 
+
 	<update id="update" parameterType="com.bootdo.clouddoadmin.domain.UserDO">
-		update sys_user 
+		update sys_user
 		<set>
 			<if test="username != null">`username` = #{username}, </if>
 			<if test="name != null">`name` = #{name}, </if>
@@ -137,19 +143,23 @@
 		</set>
 		where user_id = #{userId}
 	</update>
-	
+
 	<delete id="remove">
 		delete from sys_user where user_id = #{value}
 	</delete>
-	
+
 	<delete id="batchRemove">
-		delete from sys_user where user_id in 
+		delete from sys_user where user_id in
 		<foreach item="userId" collection="array" open="(" separator="," close=")">
 			#{userId}
 		</foreach>
 	</delete>
 
 	<select id="listAllDept" resultType="long">
-				select DISTINCT dept_id from sys_user
+  		select DISTINCT dept_id from sys_user
+	</select>
+
+	<select id="getUserByMobile" resultType="com.bootdo.clouddoadmin.domain.UserDO">
+		select * from sys_user where mobile = #{mobile}
 	</select>
 </mapper>

@@ -6,7 +6,7 @@ spring:
   application:
     name: api-base
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/clouddo?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/clouddo?useUnicode=true&characterEncoding=utf8&useSSL=false
     username: root
     password: root
 mybatis:
